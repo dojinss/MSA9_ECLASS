@@ -11,11 +11,12 @@ import java.util.Scanner;
  */
 public class Main {
 	
+	// static 멤버변수
 	static String menu1	= "1. 황금올리브 프라이드 치킨";		// 1번 메뉴
 	static String menu2	= "2. 옛날 양념 통닭";				// 2번 메뉴
 	static String menu3	= "3. 반반 무 많이 치킨";			// 3번 메뉴
 	
-	
+	// static 메소드 사용
 	static void callList() {
 
 		System.out.println("::::::: 치킨 메뉴판 :::::::");
@@ -33,13 +34,16 @@ public class Main {
 		int count2		= 0;			// 2번 메뉴 주문 개수
 		int count3		= 0;			// 3번 메뉴 주문 개수
 		
+		// 메뉴판 시작
 		do {
-			callList();
+			callList();								// 메소드 호출
+			
+			// 번호 입력
 			System.out.print("번호를 선택하세요 : ");
 			int input = sc.nextInt();
-			sc.nextLine();
+			sc.nextLine();							// 엔터키 초기화
 			
-			if(input == 0) {
+			if(input == 0) {						// 0 일경우 반복문종료 주문개수 출력
 				
 				System.out.println(":::::::::::::::::::::::::::::::::::::");
 				
@@ -54,10 +58,13 @@ public class Main {
 				System.out.println(":::::::::::::::::::::::::::::::::::::");
 				break;
 			}
+			// 0 ~ 3 사이 정수 만 입력 가능
 			else if( input > 3 || input < 0 ){
 				System.err.println("0 ~ 3 사이 숫자만 입력 가능합니다!");
 				continue;
-			}			
+			}		
+			// switch문
+			// 각 번호별 개수 증가, 주문메뉴 출력
 			switch (input) {
 				case 1:
 					System.out.println(menu1 + "(을/를) 1개 주문 하셨습니다.");
@@ -74,6 +81,8 @@ public class Main {
 			}
 			
 		} while (true);
+		
+		// <- 메뉴판 끝
 		sc.close();
 	}
 }

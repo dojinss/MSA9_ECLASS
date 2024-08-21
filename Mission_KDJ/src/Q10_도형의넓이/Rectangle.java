@@ -1,6 +1,8 @@
 package Q10_도형의넓이;
 
 public class Rectangle {
+	
+	// 멤버 변수
 	double width;
 	double height;
 
@@ -12,9 +14,15 @@ public class Rectangle {
 	}
 	
 	// 메소드
-	public double getArea(double width, double height) {
-		
+	public double getArea() {
+		double area = this.width * this.height;
 		return area;
+	}
+
+	// toString
+	@Override
+	public String toString() {
+		return "Rectangle [width=" + width + ", height=" + height + "]";
 	}
 	
 }

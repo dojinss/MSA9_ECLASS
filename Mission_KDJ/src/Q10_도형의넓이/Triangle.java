@@ -1,6 +1,8 @@
 package Q10_도형의넓이;
 
 public class Triangle {
+	
+	// 멤버 변수
 	double width;
 	double height;
 	
@@ -14,8 +16,8 @@ public class Triangle {
 	}
 	
 	// 메소드
-	public double getArea(double width, double height) {
-		double area = (width * height) / 2;
+	public double getArea() {
+		double area = (this.width * this.height) / 2;
 		return area;
 	}
 
