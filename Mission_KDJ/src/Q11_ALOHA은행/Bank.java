@@ -1,6 +1,5 @@
 package Q11_ALOHA은행;
 
-import java.util.Iterator;
 import java.util.Scanner;
 
 /**
@@ -18,30 +17,48 @@ import java.util.Scanner;
 	- 잔고 직접 지정과 입금 및 출금은 허용된 금액 범위에서만 적용 가능하도록 한다.
  */
 public class Bank {
-	final static int MAX_ACCOUNTS 	= 1000;			// 최대 고객수 1,000명
-	final static int MAX_DEPOSIT 	= 1000000;		// 최대 송금 가능 금액 1,000,000원
-	final static int MAX_MONEY		= 1000000000;	// 최대 예금액 1억원
-	static Account[] accounts = new Account[MAX_ACCOUNTS]; // 고객정보 저장할 배열
+	
+	final static int MAX_DEPOSIT 	= 1000000;				// 최대 송금 가능 금액 1,000,000원
+	final static int MAX_MONEY		= 1000000000;			// 최대 예금액 1억원
+	static Account[] accounts = new Account[MAX_ACCOUNTS];	// 고객정보 저장할 배열
 	// 계좌등록
 	static public void create(String name, String num, int money, String password) {
+		if(inquiry(num) != null) {
+			System.err.println("이미 존재하는 계좌 번호 입니다.");
+			return;
+		}
 		Account account = new Account(num,name,money,password);
 		int cnt = account.getAccountCount();
+		if(cnt > MAX_ACCOUNTS) {
+			System.err.println("최대 고객수(1000명)에 도달하여 등록할 수 없습니다.");
+			return;
+		}
 		accounts[cnt-1] = account;
 		return;
 	}
+	
 	// 입금
-	static public void deposit(  ) {
-		
+	static public void deposit( Account ac, int money  ) {
+		ac.setMoney(ac.getMoney() + money);
+		System.out.println("‘"+ ac.getName() +"‘ 님의 계좌에 " + money + " 원이 입금되었습니다.");
 	}
 	
 	// 출금
-	static public void withdraw() {
-		
+	static public void withdraw( Account ac, int money) {
+		ac.setMoney(ac.getMoney() - money);
+		System.out.println("‘"+ ac.getName() + "‘ 님의 계좌에 " + money + "원이 출금되었습니다.");
 	}
 	
 	// 계좌 조회
-	static public void inquiry() {
-		
+	static public Account inquiry(String num) {
+		for (Account account : accounts) {
+			if(account == null) break;
+			if(account.getNumber().equals(num)) {
+				Account reac = account;
+				return reac;
+			}
+		}
+		return null;
 	}
 	
 	// 계좌 목록
@@ -57,14 +74,20 @@ public class Bank {
 		}
 	}
 	
-	// 종료
-	static public void end() {
-		
+	// 비밀번호 체크
+	static public Boolean pwdCheck( Account ac, String pwd ) {
+		if(ac.getPassword().equals(pwd)) return true;
+		else return false;
 	}
 	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
-		  
+		
+		String num = "";
+		String name = "";
+		int money = 0;
+		String password = "";
+		
 		do {			
 			System.out.println("===================================");
 			System.out.println("1. 계좌등록");
@@ -72,31 +95,93 @@ public class Bank {
 			System.out.println("3. 출금");
 			System.out.println("4. 계좌조회");
 			System.out.println("5. 계좌목록");
-			System.out.println("6. 종료");
+			System.out.println("0. 종료");
 			System.out.println("===================================");
 			System.out.print("입력>>");
 			int N = sc.nextInt();
 			sc.nextLine();
 			if( N == 0 ) break;
-			
+			else if( N < 0 || N > 5) {
+				System.err.println("0 ~ 5 사이 정수만 입력 가능합니다.");
+			}
 			switch (N) {
 				case 1:
 					System.out.print("계좌번호>>");
-					String num = sc.nextLine();
+					num = sc.nextLine();
 					System.out.print("예금주>>");
-					String name = sc.nextLine();
+					name = sc.nextLine();
 					System.out.print("최초예금액>>");
-					int money = sc.nextInt();
+					money = sc.nextInt();
 					sc.nextLine();
 					System.out.print("비밀번호>>");
-					String password = sc.nextLine();
+					password = sc.nextLine();
 					create(name, num, money, password);					
 					break;
 				case 2:
+					System.out.print("계좌번호>>");
+					num = sc.nextLine();
+					if(inquiry(num) == null) {
+						System.err.println("존재하지 않는 계좌입니다.");
+						break;
+					}
+					System.out.print("입금액>>");
+					money = sc.nextInt();
+					
+					name = inquiry(num).getName();
+					System.out.println("‘"+ name +"’님에게 입금하는게 맞으십니까?");
+					System.out.println("1. 예");
+					System.out.println("2. 아니오");
+					System.out.print("입력>>");
+					int check = sc.nextInt();
+					if(check == 1)
+						deposit(inquiry(num),money);
+					else
+						break;
 					break;
 				case 3:
+					System.out.print("계좌번호>>");
+					num = sc.nextLine();
+					if(inquiry(num) == null) {
+						System.err.println("존재하지 않는 계좌입니다.");
+						break;
+					}
+					System.out.print("비밀번호>>");
+					password = sc.nextLine();
+					Account wdAcc = inquiry(num);
+					if(pwdCheck(wdAcc,password)) {
+						System.out.print("출금액>>");
+						money = sc.nextInt();
+						sc.nextLine();
+						if(money > wdAcc.getMoney()) {
+							System.err.println("잔액이 부족합니다.");
+							break;
+						}
+						else withdraw(wdAcc, money);
+					}
+					else {
+						System.err.println("비밀번호가 다륿니다!");
+						break;
+					}
+					
 					break;
 				case 4:
+					System.out.println("============= 계좌조회 =============");
+					System.out.print("계좌번호>>");
+					num = sc.nextLine();
+					if(inquiry(num) == null) {
+						System.err.println("존재하지 않는 계좌입니다.");
+						break;
+					}
+					System.out.print("비밀번호>>");
+					password = sc.nextLine();
+					Account inAcc = inquiry(num);
+					if(pwdCheck(inAcc,password)) {
+						System.out.println("‘" + inAcc.getName() + "’님의 계좌잔액은 " + inAcc.getMoney() + " 원 입니다.");
+					}
+					else {
+						System.err.println("비밀번호가 다륿니다!");
+						break;
+					}
 					break;
 				case 5:
 					list();

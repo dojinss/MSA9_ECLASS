@@ -14,7 +14,7 @@ package Q11_ALOHA은행;
 	- 잔고 직접 지정과 입금 및 출금은 허용된 금액 범위에서만 적용 가능하도록 한다.
  */
 public class Account {
-	
+	final static int MAX_ACCOUNTS 	= 1000;					// 최대 고객수 1,000명
 	
 	String number;			// 계좌번호
 	String name;			// 예금주명
@@ -26,10 +26,13 @@ public class Account {
 	// 생성자
 	// - Account 객체를 기본 생성 시 계좌번호, 예금주, 잔고는 각각 “계좌없음”, “이름없음“, 0 으로 초기화한다.
 	public Account() {
-		this("계좌없음", "이름없음", 0,"");
-		accountCount++;
+		this("계좌없음", "이름없음", 0,"");		
 	}
 	public Account(String number, String name, int money, String password) {
+		if(accountCount == MAX_ACCOUNTS) {
+			System.err.println("최대 고객수(1000명)에 도달하여 더이상 등록 하싨 수 없습니다.");
+			return;
+		}
 		this.number = number;
 		this.name = name;
 		this.money = money;
