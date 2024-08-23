@@ -1,5 +1,6 @@
 package Q11_ALOHA은행;
 
+import java.text.DecimalFormat;
 import java.util.Scanner;
 
 /**
@@ -17,10 +18,10 @@ import java.util.Scanner;
 	- 잔고 직접 지정과 입금 및 출금은 허용된 금액 범위에서만 적용 가능하도록 한다.
  */
 public class Bank {
-	
-	final static int MAX_DEPOSIT 	= 1000000;				// 최대 송금 가능 금액 1,000,000원
-	final static int MAX_MONEY		= 1000000000;			// 최대 예금액 1억원
-	static Account[] accounts = new Account[MAX_ACCOUNTS];	// 고객정보 저장할 배열
+	final static int MAX_ACCOUNTS 	= 1000;							// 최대 고객수 1,000명
+	private static int accountCount = 0;							// 현재 고객수
+	static Account[] accounts = new Account[MAX_ACCOUNTS];			// 고객정보 저장할 배열
+	static DecimalFormat decFormat = new DecimalFormat("#,###");	// 천 단위 마다 (,) 
 	// 계좌등록
 	static public void create(String name, String num, int money, String password) {
 		if(inquiry(num) != null) {
@@ -28,25 +29,25 @@ public class Bank {
 			return;
 		}
 		Account account = new Account(num,name,money,password);
-		int cnt = account.getAccountCount();
-		if(cnt > MAX_ACCOUNTS) {
+		
+		if(accountCount > MAX_ACCOUNTS) {
 			System.err.println("최대 고객수(1000명)에 도달하여 등록할 수 없습니다.");
 			return;
 		}
-		accounts[cnt-1] = account;
+		accounts[accountCount++] = account;
 		return;
 	}
 	
 	// 입금
 	static public void deposit( Account ac, int money  ) {
 		ac.setMoney(ac.getMoney() + money);
-		System.out.println("‘"+ ac.getName() +"‘ 님의 계좌에 " + money + " 원이 입금되었습니다.");
+		System.out.println("‘"+ ac.getName() +"‘ 님의 계좌에 " + decFormat.format(money) + " 원이 입금되었습니다.");
 	}
 	
 	// 출금
 	static public void withdraw( Account ac, int money) {
 		ac.setMoney(ac.getMoney() - money);
-		System.out.println("‘"+ ac.getName() + "‘ 님의 계좌에 " + money + "원이 출금되었습니다.");
+		System.out.println("‘"+ ac.getName() + "‘ 님의 계좌에 " + decFormat.format(money) + "원이 출금되었습니다.");
 	}
 	
 	// 계좌 조회
@@ -120,13 +121,21 @@ public class Bank {
 				case 2:
 					System.out.print("계좌번호>>");
 					num = sc.nextLine();
-					if(inquiry(num) == null) {
+					Account account = inquiry(num);
+					if(account == null) {
 						System.err.println("존재하지 않는 계좌입니다.");
 						break;
 					}
 					System.out.print("입금액>>");
 					money = sc.nextInt();
-					
+					if (money > Account.getMaxDeposit()) {
+						System.err.println("최대 송금 가능 금액은 1,000,000원 입니다.");
+						break;
+					}
+					if (account.getMoney() > Account.getMaxMoney()) {
+						System.err.println("최대 예금액은 10억원 입니다.");
+						break;
+					}
 					name = inquiry(num).getName();
 					System.out.println("‘"+ name +"’님에게 입금하는게 맞으십니까?");
 					System.out.println("1. 예");
@@ -176,10 +185,10 @@ public class Bank {
 					password = sc.nextLine();
 					Account inAcc = inquiry(num);
 					if(pwdCheck(inAcc,password)) {
-						System.out.println("‘" + inAcc.getName() + "’님의 계좌잔액은 " + inAcc.getMoney() + " 원 입니다.");
+						System.out.println("‘" + inAcc.getName() + "’님의 계좌잔액은 " + decFormat.format(inAcc.getMoney())  + " 원 입니다.");
 					}
 					else {
-						System.err.println("비밀번호가 다륿니다!");
+						System.err.println("비밀번호가 다릅니다!");
 						break;
 					}
 					break;
