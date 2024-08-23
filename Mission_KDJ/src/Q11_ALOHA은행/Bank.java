@@ -30,7 +30,7 @@ public class Bank {
 		}
 		Account account = new Account(num,name,money,password);
 		
-		if(accountCount > MAX_ACCOUNTS) {
+		if(accountCount >= MAX_ACCOUNTS) {
 			System.err.println("최대 고객수(1000명)에 도달하여 등록할 수 없습니다.");
 			return;
 		}
