@@ -1,7 +1,6 @@
 package Q13_로또리아당첨확인;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -31,19 +30,36 @@ import java.util.Scanner;
 	3개 일치하면 5등
  * 
  */
+
+/**
+ * 로또 번호 생성기
+ */
 class LottoNumbers{
 	private static LottoNumbers instance = new LottoNumbers();
-	public static List<Integer> getNumbers() {
+	private static int bonusNum = 0;
+	public static List<Integer> getNumbers(int num) {
 		List<Integer> lottoList = new ArrayList<Integer>();
-		for(int i = 0; i < 6 ; i++) {
+		for(int i = 0; i < num ; i++) {
+			boolean check = false;
 			int rnd = new Random().nextInt(45) + 1;
-			lottoList.add(rnd);
-			if(lottoList.get(i) == rnd) i--;
+			for (Integer item : lottoList) {
+				if (item == rnd) check = true;					
+			}
+			if(num == 7 && i == 6) {
+				bonusNum = rnd;
+				break;
+			}	
+			if(check) i--;
+			else lottoList.add(rnd);
 		}
+				
 		Collections.sort(lottoList);
 		return lottoList;
 	}
 	private LottoNumbers () {
+	}
+	public static int getBonusNum() {
+		return bonusNum;
 	}
 	public static LottoNumbers getInstance() {
 		if( instance == null ) {
@@ -54,7 +70,7 @@ class LottoNumbers{
 }
 
 /**
- * 
+ * 전체 로또번호 정보를 담을 객체
  */
 class Lottos {
 	char charSort;
@@ -88,43 +104,107 @@ class Lottos {
 	public String toString() {
 		return "Lottos [charSort=" + charSort + ", typeCheck=" + typeCheck + ", numList=" + numList + "]";
 	}
-	
 }
 
 public class Main {
-	final static int PAY_DATE_DAY = 366;				// 지급기한 1년(365) 하고 1일 더 = 366일
-	final static int MAX_GAME = 5;						// 최대 게임수 5
-	static Scanner sc = new Scanner(System.in);			// 입력 객체 선언
-	static Calendar now = Calendar.getInstance();		// 현재 시간 추출
-	static Lottos[] totalList = new Lottos[MAX_GAME];	// Lottos클래스 배열생성[최대게임수]
+//	private final static int PAY_DATE_DAY = 366;								// 지급기한 1년(365) 하고 1일 더 = 366일
+	private final static int MAX_GAME = 5;										// 최대 게임수 5
+	static Scanner sc = new Scanner(System.in);									// 입력 객체 선언
+//	private static Calendar now = Calendar.getInstance();						// 현재 시간 추출
+	private static Lottos[] totalList = new Lottos[MAX_GAME];					// Lottos클래스 배열생성[최대게임수]
+	private final static List<Integer> WIN_NUMBERS = LottoNumbers.getNumbers(7); // 당첨번호
 	
 	public static void main(String[] args) {
-		//LottoNumbers lottoNumbers = LottoNumbers.getInstance();
 		int gameCount = 0;
-		System.out.print("1~5사이 정수 입력 : ");
-		try {
-			gameCount = sc.nextInt();
-			sc.nextLine();
-			if( gameCount > MAX_GAME || gameCount < 1) { 
-				System.err.println("1~5사이의 정수만 입력 가능합니다.");
-				return;
-			}
-		} catch (Exception e) {
-			System.err.println("1~5사이의 정수만 입력 가능합니다.");
-			return;
-		}
-		
-		
+		int autoCheck = 1;
+		gameCount = inputNumber("몇 게임 ? ",1,5);
 		for (int i = 0; i < gameCount; i++) {
-			List<Integer> lottoList = LottoNumbers.getNumbers();
-			for (Integer lotto : lottoList) {
+			List<Integer> lottoList = new ArrayList<Integer>();
+			autoCheck = inputNumber("["+ (i+1) +" 게임]1. 자동 2. 수동 : ",1, 2);
+			if(autoCheck == 1) {
+				lottoList = LottoNumbers.getNumbers(6);
+				System.out.print(">> ");
+				listPrint(lottoList);
+			}
+			else {
+				for (int j = 1; j <= 6; j++) {
+					int num = inputNumber(j + "번째 숫자 입력 : ",1, 45);
+					boolean check = false;
+					for (Integer item : lottoList) {
+						if (item == num) check = true;					
+					}
+					if(check) {
+						System.err.println("이미 입력한 번호입니다. [중복된 숫자 : " + num + "]");
+						j--;
+					}
+					else lottoList.add(num);
+				}
+				Collections.sort(lottoList);
+				System.out.print(">> ");
+				listPrint(lottoList);
+			}
+			Lottos lottos = new Lottos((char)(65 + i),true,lottoList);
+			totalList[i] =lottos;
+		}
+		System.out.println("======================================================");
+		// 당첨 번호 출력
+		System.out.print("당첨 번호 :");
+		listPrint(WIN_NUMBERS);
+		System.out.println("------------------------------------------------------");
+		// 입력된 로또 번호 출력
+		for (Lottos lottos : totalList) {
+			if(lottos == null) break;
+			int winLevel = 0;
+			int winCount = 0;
+			boolean bonusCheck = false;
+			System.out.print(lottos.getCharSort() + ".\t");
+			for (Integer lotto : lottos.getNumList()) {
+				for (Integer item : WIN_NUMBERS) {
+					if(lotto == item) winCount++;
+					if(item == LottoNumbers.getBonusNum()) bonusCheck = true;
+				}
 				System.out.print((lotto<10?" ":"")+lotto+" ");
 			}
+			System.out.print("\t당첨 개수 : " + winCount);
+			
+			switch (winCount) {
+				case 3 : System.out.print(" - 5등 당첨"); break;
+				case 4 : System.out.print(" - 4등 당첨"); break;
+				case 5 : 
+					if(bonusCheck) System.out.print(" - 2등 당첨 축하합니다.");
+					else System.out.print(" - 3등 당첨"); 
+					break;
+				case 6 : System.out.print(" - 1등 당첨!!!! 축하합니다!!!!"); break;
+			}
 			System.out.println();
-			totalList[i].setCharSort((char)(40 + i));
-			totalList[i].setTypeCheck(true);
-			totalList[i].setNumList(lottoList);
 		}
 	}
 	
+	// 번호 입력
+	static int inputNumber(String str,int a, int b) {
+		int num = 0;
+		boolean check = true;
+		do {
+			System.out.print(str);
+			try {
+				num = sc.nextInt();
+				sc.nextLine();
+				if( num < a || num > b) { 
+					System.err.println( a + "~" + b + "사이의 정수만 입력 가능합니다.");
+				}
+				else check = false;
+			} catch (Exception e) {
+				System.err.println( a + "~"+ b +"사이의 정수만 입력 가능합니다.");
+			}
+		} while (check);
+		
+		return num;
+	}
+	// 로또 번호 출력
+	static void listPrint(List<Integer> list) {
+		for (Integer lotto : list) {
+			System.out.print((lotto<10?" ":"")+lotto+" ");
+		}
+		System.out.println();
+	}
 }
