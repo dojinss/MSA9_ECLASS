@@ -1,5 +1,8 @@
 package Q13_로또리아당첨확인;
 
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,9 +37,17 @@ import java.util.Scanner;
 /**
  * 로또 번호 생성기
  */
-class LottoNumbers{
-	private static LottoNumbers instance = new LottoNumbers();
-	private static int bonusNum = 0;
+class LottoNumbers{ // [C1000]-->
+	private static LottoNumbers instance = new LottoNumbers();			// [싱글톤패턴] 단일 인스턴스 생성
+	private static int bonusNum = 0;									// 보너스 번호 담을 변수
+	private final static List<Integer> WIN_NUMBERS = getNumbers(7); 	// 당첨번호
+	
+	/**
+	 * 랜덤 번호 6개생성
+	 * List - ArrayList 객체로 반환
+	 * @param num
+	 * @return
+	 */
 	public static List<Integer> getNumbers(int num) {
 		List<Integer> lottoList = new ArrayList<Integer>();
 		for(int i = 0; i < num ; i++) {
@@ -52,22 +63,27 @@ class LottoNumbers{
 			if(check) i--;
 			else lottoList.add(rnd);
 		}
-				
-		Collections.sort(lottoList);
-		return lottoList;
+		Collections.sort(lottoList);				// 리스트 오름차순 정렬
+		return lottoList;							// 번호 6개 담긴 리스트 반환
 	}
-	private LottoNumbers () {
+	
+	// getter
+	public List<Integer> getWinNumbers() {
+		return WIN_NUMBERS;
 	}
-	public static int getBonusNum() {
+	public int getBonusNum() {
 		return bonusNum;
 	}
+	// getInstance [싱글톤패턴]
+	// 객체 선언시 new 를 사용하지 않고 getInstance로 객체 선언 및 사용
 	public static LottoNumbers getInstance() {
 		if( instance == null ) {
 			instance = new LottoNumbers();
 		}
 		return instance;
 	}
-}
+	
+}//<--[C1000]
 
 /**
  * 전체 로또번호 정보를 담을 객체
@@ -87,7 +103,7 @@ class Lottos {
 	public void setCharSort(char charSort) {
 		this.charSort = charSort;
 	}
-	public boolean isTypeCheck() {
+	public boolean getTypeCheck() {
 		return typeCheck;
 	}
 	public void setTypeCheck(boolean typeCheck) {
@@ -107,28 +123,34 @@ class Lottos {
 }
 
 public class Main {
-//	private final static int PAY_DATE_DAY = 366;								// 지급기한 1년(365) 하고 1일 더 = 366일
-	private final static int MAX_GAME = 5;										// 최대 게임수 5
-	static Scanner sc = new Scanner(System.in);									// 입력 객체 선언
-//	private static Calendar now = Calendar.getInstance();						// 현재 시간 추출
-	private static Lottos[] totalList = new Lottos[MAX_GAME];					// Lottos클래스 배열생성[최대게임수]
-	private final static List<Integer> WIN_NUMBERS = LottoNumbers.getNumbers(7); // 당첨번호
+//	private final static int PAY_DATE_DAY = 366;									// 지급기한 1년(365) 하고 1일 더 = 366일
+	private final static int MAX_GAME = 5;											// 최대 게임수 5
+	static Scanner sc = new Scanner(System.in);										// 입력 객체 선언
+//	private static Calendar now = Calendar.getInstance();							// 현재 시간 추출
+	private static Lottos[] totalList = new Lottos[MAX_GAME];						// Lottos클래스 배열생성[최대게임수]
+	private static LottoNumbers lottoMachine = LottoNumbers.getInstance();			// [싱글톤패턴] 객체 생성
 	
 	public static void main(String[] args) {
 		int gameCount = 0;
 		int autoCheck = 1;
+		
+		
 		gameCount = inputNumber("몇 게임 ? (1~5) ",1,5);
 		for (int i = 0; i < gameCount; i++) {
+			boolean autoLotto = true;
 			List<Integer> lottoList = new ArrayList<Integer>();
-			autoCheck = inputNumber("["+ (i+1) +" 게임]1. 자동 2. 수동 : ",1, 2);
+			autoCheck = inputNumber("["+ (i+1) +" 게임] (1.자동 / 2.수동) : ",1, 2);
 			if(autoCheck == 1) {
 				lottoList = LottoNumbers.getNumbers(6);
 				System.out.print(">> ");
 				listPrint(lottoList);
+				System.out.println();
+				
 			}
 			else {
-				for (int j = 1; j <= 6; j++) {
-					int num = inputNumber(j + "번째 숫자 입력 : ",1, 45);
+				for (int j = 0; j < 6; j++) {
+					char snum = (char)('\u2780'+j);
+					int num = inputNumber(snum + " : ",1, 45);
 					boolean check = false;
 					for (Integer item : lottoList) {
 						if (item == num) check = true;					
@@ -142,46 +164,30 @@ public class Main {
 				Collections.sort(lottoList);
 				System.out.print(">> ");
 				listPrint(lottoList);
+				System.out.println();
+				autoLotto = false;
 			}
-			Lottos lottos = new Lottos((char)(65 + i),true,lottoList);
+			Lottos lottos = new Lottos((char)(65 + i),autoLotto,lottoList);
 			totalList[i] =lottos;
 		}
 		System.out.println("======================================================");
+		System.out.println();
+		// 로또 복권 발행
+		issuance(gameCount);
+		System.out.println();
 		// 당첨 번호 출력
-		System.out.print("당첨 번호 :");
-		listPrint(WIN_NUMBERS);
-		System.out.println("------------------------------------------------------");
-		// 입력된 로또 번호 출력
-		for (Lottos lottos : totalList) {
-			if(lottos == null) break;
-			int winLevel = 0;
-			int winCount = 0;
-			boolean bonusCheck = false;
-			System.out.print(lottos.getCharSort() + ".\t");
-			for (Integer lotto : lottos.getNumList()) {
-				for (Integer item : WIN_NUMBERS) {
-					if(lotto == item) winCount++;
-					if(item == LottoNumbers.getBonusNum()) bonusCheck = true;
-				}
-				System.out.print((lotto<10?" ":"")+lotto+" ");
-			}
-			System.out.print("\t당첨 개수 : " + winCount);
-			
-			switch (winCount) {
-				case 3 : System.out.print(" - 5등 당첨"); break;
-				case 4 : System.out.print(" - 4등 당첨"); break;
-				case 5 : 
-					if(bonusCheck) System.out.print(" - 2등 당첨 축하합니다.");
-					else System.out.print(" - 3등 당첨"); 
-					break;
-				case 6 : System.out.print(" - 1등 당첨!!!! 축하합니다!!!!"); break;
-			}
-			System.out.println();
-		}
+				System.out.print("당첨 번호 :");
+				listPrint(lottoMachine.getWinNumbers());
+				System.out.println();
+				System.out.println("보너스 번호 : " + lottoMachine.getBonusNum());
+				System.out.println();
+				System.out.println("------------------------------------------------------");
+		// 당첨 결과
+		listWinning();
 	}
 	
 	// 번호 입력
-	static int inputNumber(String str,int a, int b) {
+	static int inputNumber(String str,int a, int b) { // [M1000]-->
 		int num = 0;
 		boolean check = true;
 		do {
@@ -199,12 +205,65 @@ public class Main {
 			}
 		} while (check);
 		return num;
-	}
+	}//<--[M1000]
+	
 	// 로또 번호 출력
-	static void listPrint(List<Integer> list) {
+	static void listPrint(List<Integer> list) { // [M2000]-->
 		for (Integer lotto : list) {
 			System.out.print((lotto<10?" ":"")+lotto+" ");
 		}
-		System.out.println();
-	}
-}
+	}//<--[M2000]
+	
+	// 복권 발행
+	static void issuance(int count) { // [M3000]-->
+		DecimalFormat df = new DecimalFormat("#,###");
+		
+		System.out.println("############ 인생역전 Lottoria ############");
+		System.out.println("-----------------------------------------");
+		for (Lottos lottos : totalList) {
+			if(lottos == null) break;
+			System.out.print(lottos.getCharSort() + ". ");
+			System.out.print(lottos.getTypeCheck()?"자  동":"수  동 ");
+			for (Integer lotto : lottos.getNumList()) {
+				System.out.print((lotto<10?" ":"")+lotto+" ");
+			}
+			System.out.println();
+		}
+		System.out.println("-----------------------------------------");
+		System.out.println("금액\t\t\t\t ₩" + df.format(count * 1000));
+		System.out.println("#########################################");
+	}//<--[M3000]
+	
+	// 당첨 결과
+	static void listWinning() {	// [M4000]-->
+		System.out.println("#################### 당첨 결과 ####################");
+		for (Lottos lottos : totalList) { // 당첨 결과 시작 [F4100]-->
+			if(lottos == null) break;
+			int winCount = 0;
+			boolean bonusCheck = false;
+			System.out.print(lottos.getCharSort() + ". ");
+			System.out.print(lottos.getTypeCheck()?"자  동":"수  동 ");
+			for (Integer lotto : lottos.getNumList()) { // [F4110]-->
+				for (Integer item : lottoMachine.getWinNumbers()) {
+					if(lotto == item) winCount++;
+					if(item == lottoMachine.getBonusNum()) bonusCheck = true;
+				}
+				System.out.print((lotto<10?" ":"")+lotto+"   ");
+			}//<--[F4110]
+			
+			switch (winCount) { // 당첨 여부 출력 [S4120]-->
+				case 3 : System.out.print("(5등 당첨)"); break;
+				case 4 : System.out.print("(4등 당첨)"); break;
+				case 5 : 
+					if(bonusCheck) System.out.print("(2등 당첨 축하합니다.)");
+					else System.out.print("(3등 당첨)"); 
+					break;
+				case 6 : System.out.print("(1등 당첨!!!! 축하합니다!!!!)"); break;
+				default : System.out.print(" (낙첨)");
+			}//<--[S4120]
+			System.out.println();
+		}//<--[F4100]
+		System.out.println("#################################################");
+	}//<--[M4000]
+	
+}//<--[Main]
