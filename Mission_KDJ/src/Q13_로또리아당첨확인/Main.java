@@ -117,7 +117,7 @@ public class Main {
 	public static void main(String[] args) {
 		int gameCount = 0;
 		int autoCheck = 1;
-		gameCount = inputNumber("몇 게임 ? ",1,5);
+		gameCount = inputNumber("몇 게임 ? (1~5) ",1,5);
 		for (int i = 0; i < gameCount; i++) {
 			List<Integer> lottoList = new ArrayList<Integer>();
 			autoCheck = inputNumber("["+ (i+1) +" 게임]1. 자동 2. 수동 : ",1, 2);
@@ -195,6 +195,7 @@ public class Main {
 				else check = false;
 			} catch (Exception e) {
 				System.err.println( a + "~"+ b +"사이의 정수만 입력 가능합니다.");
+				sc.nextLine();
 			}
 		} while (check);
 		
