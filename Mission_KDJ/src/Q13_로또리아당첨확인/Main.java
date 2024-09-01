@@ -198,7 +198,6 @@ public class Main {
 				sc.nextLine();
 			}
 		} while (check);
-		
 		return num;
 	}
 	// 로또 번호 출력
