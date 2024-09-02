@@ -1,10 +1,10 @@
 package Q13_로또리아당첨확인;
 
 import java.text.DecimalFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -34,99 +34,11 @@ import java.util.Scanner;
  * 
  */
 
-/**
- * 로또 번호 생성기
- */
-class LottoNumbers{ // [C1000]-->
-	private static LottoNumbers instance = new LottoNumbers();			// [싱글톤패턴] 단일 인스턴스 생성
-	private static int bonusNum = 0;									// 보너스 번호 담을 변수
-	private final static List<Integer> WIN_NUMBERS = getNumbers(7); 	// 당첨번호
-	
-	/**
-	 * 랜덤 번호 6개생성
-	 * List - ArrayList 객체로 반환
-	 * @param num
-	 * @return
-	 */
-	public static List<Integer> getNumbers(int num) {
-		List<Integer> lottoList = new ArrayList<Integer>();
-		for(int i = 0; i < num ; i++) {
-			boolean check = false;
-			int rnd = new Random().nextInt(45) + 1;
-			for (Integer item : lottoList) {
-				if (item == rnd) check = true;					
-			}
-			if(num == 7 && i == 6) {
-				bonusNum = rnd;
-				break;
-			}	
-			if(check) i--;
-			else lottoList.add(rnd);
-		}
-		Collections.sort(lottoList);				// 리스트 오름차순 정렬
-		return lottoList;							// 번호 6개 담긴 리스트 반환
-	}
-	
-	// getter
-	public List<Integer> getWinNumbers() {
-		return WIN_NUMBERS;
-	}
-	public int getBonusNum() {
-		return bonusNum;
-	}
-	// getInstance [싱글톤패턴]
-	// 객체 선언시 new 를 사용하지 않고 getInstance로 객체 선언 및 사용
-	public static LottoNumbers getInstance() {
-		if( instance == null ) {
-			instance = new LottoNumbers();
-		}
-		return instance;
-	}
-	
-}//<--[C1000]
 
-/**
- * 전체 로또번호 정보를 담을 객체
- */
-class Lottos {
-	char charSort;
-	boolean typeCheck;
-	List<Integer> numList;
-	public Lottos(char charSort, boolean typeCheck, List<Integer> numList) {
-		this.charSort = charSort;
-		this.typeCheck = typeCheck;
-		this.numList = numList;
-	}
-	public char getCharSort() {
-		return charSort;
-	}
-	public void setCharSort(char charSort) {
-		this.charSort = charSort;
-	}
-	public boolean getTypeCheck() {
-		return typeCheck;
-	}
-	public void setTypeCheck(boolean typeCheck) {
-		this.typeCheck = typeCheck;
-	}
-	public List<Integer> getNumList() {
-		return numList;
-	}
-	public void setNumList(List<Integer> numList) {
-		this.numList = numList;
-	}
-	
-	@Override
-	public String toString() {
-		return "Lottos [charSort=" + charSort + ", typeCheck=" + typeCheck + ", numList=" + numList + "]";
-	}
-}
 
 public class Main {
-//	private final static int PAY_DATE_DAY = 366;									// 지급기한 1년(365) 하고 1일 더 = 366일
 	private final static int MAX_GAME = 5;											// 최대 게임수 5
 	static Scanner sc = new Scanner(System.in);										// 입력 객체 선언
-//	private static Calendar now = Calendar.getInstance();							// 현재 시간 추출
 	private static Lottos[] totalList = new Lottos[MAX_GAME];						// Lottos클래스 배열생성[최대게임수]
 	private static LottoNumbers lottoMachine = LottoNumbers.getInstance();			// [싱글톤패턴] 객체 생성
 	
@@ -135,7 +47,7 @@ public class Main {
 		int autoCheck = 1;
 		
 		
-		gameCount = inputNumber("몇 게임 ? (1~5) ",1,5);
+		gameCount = inputNumber("몇 게임 ? (1~5) ",1,MAX_GAME);
 		for (int i = 0; i < gameCount; i++) {
 			boolean autoLotto = true;
 			List<Integer> lottoList = new ArrayList<Integer>();
@@ -176,12 +88,12 @@ public class Main {
 		issuance(gameCount);
 		System.out.println();
 		// 당첨 번호 출력
-				System.out.print("당첨 번호 :");
-				listPrint(lottoMachine.getWinNumbers());
-				System.out.println();
-				System.out.println("보너스 번호 : " + lottoMachine.getBonusNum());
-				System.out.println();
-				System.out.println("------------------------------------------------------");
+		System.out.print("당첨 번호 :");
+		listPrint(lottoMachine.getWinNumbers());
+		System.out.println();
+		System.out.println("보너스 번호 : " + lottoMachine.getBonusNum());
+		System.out.println();
+		System.out.println("------------------------------------------------------");
 		// 당첨 결과
 		listWinning();
 	}
@@ -219,11 +131,14 @@ public class Main {
 		DecimalFormat df = new DecimalFormat("#,###");
 		
 		System.out.println("############ 인생역전 Lottoria ############");
+		// 발행기간 출력
+		lottoMachine.getDate();
+		
 		System.out.println("-----------------------------------------");
 		for (Lottos lottos : totalList) {
 			if(lottos == null) break;
 			System.out.print(lottos.getCharSort() + ". ");
-			System.out.print(lottos.getTypeCheck()?"자  동":"수  동 ");
+			System.out.print(lottos.getTypeCheck()?"자  동":"수  동");
 			for (Integer lotto : lottos.getNumList()) {
 				System.out.print((lotto<10?" ":"")+lotto+" ");
 			}
@@ -242,7 +157,7 @@ public class Main {
 			int winCount = 0;
 			boolean bonusCheck = false;
 			System.out.print(lottos.getCharSort() + ". ");
-			System.out.print(lottos.getTypeCheck()?"자  동":"수  동 ");
+			System.out.print(lottos.getTypeCheck()?"자  동":"수  동");
 			for (Integer lotto : lottos.getNumList()) { // [F4110]-->
 				for (Integer item : lottoMachine.getWinNumbers()) {
 					if(lotto == item) winCount++;
