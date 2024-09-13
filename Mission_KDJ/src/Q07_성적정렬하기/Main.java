@@ -23,13 +23,14 @@ public class Main {
 		
 		// 오름차순 정렬 (삽입 정렬)
 		// 2번째부터 바로 전단계와 비교하며 0번째까지 비교, 키값보다 큰수는 뒤로 밀어내고 자리를 찾아감
-		for (int i = 2; i < scoArr.length; i++) { 	// 2번째 부터시작	
+		for (int i = 1; i < scoArr.length; i++) { 	// [인덱스1]2번째 부터시작	
 			for (int j = i; j > 0; j--) {			// 앞에 배열요소들 만큼 index[1]까지 반복
 				if(scoArr[j] < scoArr[j-1]) {		// 바로 전단계 인덱스와 크기 비교 하여 자리바꿈
 					int temp = scoArr[j-1];
 					scoArr[j-1] = scoArr[j];
 					scoArr[j] = temp;
 				}
+				else break;							// 앞단계보다 클경우 반복 종료
 			}
 		}
 		
